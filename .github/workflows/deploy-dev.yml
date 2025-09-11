@@ -1,0 +1,55 @@
+name: Deploy Dev
+on:
+  push:
+    branches: ["main"]
+
+
+permissions:
+  id-token: write
+  contents: read
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: "pnpm" }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm -w build
+
+    # Build Lambda zip for API
+      - name: Zip API Lambda
+        run: |
+          cd services/api && pnpm build
+          mkdir -p ../../infra/modules/lambdas/zips
+          cd dist && zip -r ../../infra/modules/lambdas/zips/api.zip .
+
+
+      # Configure AWS creds via OIDC + role you create in AWS
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: us-east-1
+
+
+      - name: Terraform Init/Plan/Apply (dev)
+        working-directory: infra
+        env:
+          TF_VAR_region: us-east-1
+        run: |
+          terraform init -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+          -backend-config="key=orderflow/dev/terraform.tfstate" \
+          -backend-config="region=us-east-1" \
+          -backend-config="dynamodb_table=${{ secrets.TF_STATE_LOCK_TABLE }}"
+          terraform plan -var-file=envs/dev/dev.tfvars -out=tfplan
+          terraform apply -auto-approve tfplan
+
+
+      - name: Show Outputs
+        working-directory: infra
+        run: terraform output -json

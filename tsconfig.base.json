@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@orderflow/ui": ["packages/ui/src"],
+      "@orderflow/config": ["packages/config/src"],
+      "@orderflow/types": ["packages/types/src"],
+      "@orderflow/aws-utils": ["packages/aws-utils/src"]
+    }
+  }
+}
