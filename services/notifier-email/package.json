@@ -1,5 +1,5 @@
 {
-  "name": "@orderflow/processor",
+  "name": "@orderflow/notifier-email",
   "version": "0.0.1",
   "type": "module",
   "main": "dist/index.js",

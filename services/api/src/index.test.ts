@@ -24,8 +24,8 @@ test('GET /orders returns empty array', async () => {
     rawPath: '/orders',
     requestContext: { http: { method: 'GET' } } as any,
   } as any);
-  expect(res.statusCode).toBe(200);
-  expect(JSON.parse(res.body)).toEqual([]);
+  expect((res as any).statusCode).toBe(200);
+  expect(JSON.parse((res as any).body)).toEqual([]);
 });
 
 test('POST /orders creates and emits event', async () => {
@@ -36,7 +36,7 @@ test('POST /orders creates and emits event', async () => {
     requestContext: { http: { method: 'POST' } } as any,
     body: JSON.stringify({ customerName: 'Ada', amount: 42 }),
   } as any);
-  expect(res.statusCode).toBe(200);
-  const order = JSON.parse(res.body);
+  expect((res as any).statusCode).toBe(200);
+  const order = JSON.parse((res as unknown as { body: string }).body);
   expect(order.customerName).toBe('Ada');
 });

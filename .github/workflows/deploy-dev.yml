@@ -15,9 +15,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-        with: { version: 9 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: "pnpm" }
+        with:
+          node-version: 20
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm -w build
 
@@ -36,6 +37,24 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: us-east-1
 
+      - name: Zip Processor Lambda
+        run: |
+          cd services/processor && pnpm build
+          mkdir -p ../../infra/modules/lambdas/zips
+          cd dist && zip -r ../../infra/modules/lambdas/zips/processor.zip .
+
+      - name: Zip Notifier Lambda
+        run: |
+          cd services/notifier-email && pnpm build
+          mkdir -p ../../infra/modules/lambdas/zips
+          cd dist && zip -r ../../infra/modules/lambdas/zips/notifier-email.zip .
+
+
+      - name: Zip Athena Report Lambda
+        run: |
+          cd services/athena-report && pnpm build
+          mkdir -p ../../infra/modules/lambdas/zips
+          cd dist && zip -r ../../infra/modules/lambdas/zips/athena-report.zip .
 
       - name: Terraform Init/Plan/Apply (dev)
         working-directory: infra

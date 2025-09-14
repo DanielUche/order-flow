@@ -1,51 +1,66 @@
 variable "lambda_arn" { type = string }
 variable "invoke_arn" { type = string }
 
+variable "athena_invoke_arn" { type = string }
 
 resource "aws_apigatewayv2_api" "http" {
-    name = "orderflow-http"
-    protocol_type = "HTTP"
+  name = "orderflow-http"
+  protocol_type = "HTTP"
 }
 
 
 resource "aws_apigatewayv2_integration" "lambda" {
-    api_id = aws_apigatewayv2_api.http.id
-    integration_type = "AWS_PROXY"
-    integration_uri = var.invoke_arn
-    payload_format_version = "2.0"
+  api_id = aws_apigatewayv2_api.http.id
+  integration_type = "AWS_PROXY"
+  integration_uri = var.invoke_arn
+  payload_format_version = "2.0"
 }
 
 
 resource "aws_apigatewayv2_route" "get_orders" {
-    api_id = aws_apigatewayv2_api.http.id
-    route_key = "GET /orders"
-    target = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  api_id = aws_apigatewayv2_api.http.id
+  route_key = "GET /orders"
+  target = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
 
 resource "aws_apigatewayv2_route" "post_orders" {
-    api_id = aws_apigatewayv2_api.http.id
-    route_key = "POST /orders"
-    target = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+  api_id = aws_apigatewayv2_api.http.id
+  route_key = "POST /orders"
+  target = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
 
 resource "aws_lambda_permission" "apigw" {
-    statement_id = "AllowAPIGatewayInvoke"
-    action = "lambda:InvokeFunction"
-    function_name = var.lambda_arn
-    principal = "apigateway.amazonaws.com"
-    source_arn = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
+  statement_id = "AllowAPIGatewayInvoke"
+  action = "lambda:InvokeFunction"
+  function_name = var.lambda_arn
+  principal = "apigateway.amazonaws.com"
+  source_arn = "${aws_apigatewayv2_api.http.execution_arn}/*/*"
 }
 
 
 resource "aws_apigatewayv2_stage" "dev" {
-    api_id = aws_apigatewayv2_api.http.id
-    name = "dev"
-    auto_deploy = true
+  api_id = aws_apigatewayv2_api.http.id
+  name = "dev"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_integration" "athena" {
+  api_id = aws_apigatewayv2_api.http.id
+  integration_type = "AWS_PROXY"
+  integration_uri = var.athena_invoke_arn
+  payload_format_version = "2.0"
+}
+
+
+resource "aws_apigatewayv2_route" "analytics_orders_per_day" {
+  api_id = aws_apigatewayv2_api.http.id
+  route_key = "GET /analytics/orders-per-day"
+  target = "integrations/${aws_apigatewayv2_integration.athena.id}"
 }
 
 
 output "invoke_url" {
-    value = "${aws_apigatewayv2_api.http.api_endpoint}/${aws_apigatewayv2_stage.dev.name}" 
+  value = "${aws_apigatewayv2_api.http.api_endpoint}/${aws_apigatewayv2_stage.dev.name}" 
 }

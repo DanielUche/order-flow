@@ -1,0 +1,25 @@
+Deploy (Dev)
+
+Create S3 bucket + DynamoDB lock for TF state.
+
+Set GitHub secrets: AWS_ROLE_TO_ASSUME, TF_STATE_BUCKET, TF_STATE_LOCK_TABLE.
+
+Push to main → Actions deploys infra, outputs API URL.
+
+Set VITE_API_URL in app envs/hosting for mf-orders.
+
+What’s Included
+
+API Gateway + Lambda (Node 20) with DynamoDB + EventBridge (base).
+
+React host + two MFEs via Vite Module Federation.
+
+Jest + aws-sdk-client-mock example tests.
+
+Turborepo wiring + shared internal packages.
+
+Terraform modules & GitHub Actions (CI + deploy).
+
+Next (per 14-day plan)
+
+Add SQS/SNS processors, MQ ingestor, S3 lake + Glue + Athena, Website hosting, Playwright smoke tests.
