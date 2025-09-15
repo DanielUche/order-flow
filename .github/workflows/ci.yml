@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: 'pnpm -w lint || true'
+      - run: 'pnpm -w lint'
       - run: pnpm -w build
       - run: pnpm -w test -- --coverage
       - uses: actions/upload-artifact@v4

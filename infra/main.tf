@@ -53,6 +53,10 @@ module "queues" {
   processor_lambda_arn = module.lambdas.processor_lambda_arn
 }
 
+module "website" {
+  source      = "./modules/website"
+  site_bucket = "${var.account_alias}-orderflow-web-dev"
+}
 
 module "topics" {
   source     = "./modules/topics"

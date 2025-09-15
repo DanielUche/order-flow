@@ -8,10 +8,21 @@ export default defineConfig({
     federation({
       name: 'mf-analytics',
       filename: 'remoteEntry.js',
-      exposes: { './App': './src/App.tsx' },
+      exposes: {
+        './App': './src/App.tsx',
+      },
       shared: ['react', 'react-dom'],
     }),
   ],
-  server: { port: 5002 },
-  base: process.env.BUILD_ENV === 'prod' ? '/assets/mf-analytics/' : '/',
+  server: {
+    host: '127.0.0.1',
+    port: 5002,
+    strictPort: true, // <-- fail if 5001 is taken (don’t auto-bump)
+    cors: true,
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  },
+  build: {
+    outDir: 'dist',
+    target: 'esnext',
+  },
 });

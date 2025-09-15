@@ -15,6 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with: { version: 9 }
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -68,6 +69,42 @@ jobs:
           terraform plan -var-file=envs/dev/dev.tfvars -out=tfplan
           terraform apply -auto-approve tfplan
 
+      - name: Save Terraform outputs
+        working-directory: infra
+        run: terraform output -json > tf-outputs.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: tf-outputs
+          path: infra/tf-outputs.json
+
+      - name: Read API URL from outputs
+        run: |
+          API=$(jq -r '.api_url.value' infra/tf-outputs.json)
+          echo "VITE_API_URL=$API" >> $GITHUB_ENV
+          echo "VITE_ANALYTICS_URL=$API" >> $GITHUB_ENV
+
+      - name: Build frontends
+        run: |
+          pnpm --filter web-shell build
+          pnpm --filter mf-orders build
+          pnpm --filter mf-analytics build
+    
+      - name: Upload to S3
+        run: |
+          BUCKET=$(jq -r '.website_bucket.value' infra/tf-outputs.json)
+          aws s3 sync apps/web-shell/dist s3://$BUCKET/ --delete
+          aws s3 sync apps/mf-orders/dist s3://$BUCKET/assets/mf-orders/ --delete
+          aws s3 sync apps/mf-analytics/dist s3://$BUCKET/assets/mf-analytics/ --delete
+
+      - name: Invalidate CloudFront
+        run: |
+          DIST=$(jq -r '.distribution_id.value' infra/tf-outputs.json)
+          aws cloudfront create-invalidation --distribution-id $DIST --paths "/*"
+
+      - name: Run smoke E2E
+        env:
+          WEB_URL: $(jq -r '.web_domain.value' infra/tf-outputs.json)
+        run: npx playwright test e2e/smoke.spec.ts --reporter=line
 
       - name: Show Outputs
         working-directory: infra

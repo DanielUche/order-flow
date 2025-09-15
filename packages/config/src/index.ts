@@ -1,11 +1,9 @@
 export const jestConfig = {
   testEnvironment: 'node',
-  transform: {
-    '^.+\\.(t|j)sx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }],
-  },
+  transform: { '^.+\\.(t|j)sx?$': ['ts-jest', { tsconfig: 'tsconfig.json' }] },
   collectCoverageFrom: ['src/**/*.{ts,tsx}'],
   coverageDirectory: 'coverage',
   moduleNameMapper: {
-    '^@orderflow/(.*)$': '<rootDir>/../$1/src',
+    '^@orderflow/(.*)$': '<rootDir>/../../packages/$1/src', // <-- change to ../../packages
   },
 };

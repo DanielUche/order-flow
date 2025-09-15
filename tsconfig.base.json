@@ -13,7 +13,8 @@
       "@orderflow/ui": ["packages/ui/src"],
       "@orderflow/config": ["packages/config/src"],
       "@orderflow/types": ["packages/types/src"],
-      "@orderflow/aws-utils": ["packages/aws-utils/src"]
+      "@orderflow/aws-utils": ["packages/aws-utils/src"],
+       "@orderflow/contracts": ["packages/contracts/src"],
     }
   }
 }

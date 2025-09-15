@@ -15,3 +15,8 @@ variable "bus_name" {
 	type        = string
 	default     = "orderflow-dev"
 }
+
+variable "account_alias" {
+  type    = string
+  default = "daniel"
+}

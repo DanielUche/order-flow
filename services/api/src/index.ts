@@ -11,14 +11,19 @@ import type {
   APIGatewayProxyResultV2,
 } from 'aws-lambda';
 import { Order } from '@orderflow/types';
+import { withColdStart, log } from '@orderflow/aws-utils';
+
+import { CreateOrderSchema } from './schemas';
 
 const doc = DynamoDBDocumentClient.from(ddb);
 const TABLE = process.env.TABLE_ORDERS!;
 const BUS = process.env.EVENT_BUS!;
 
-export const handler = async (
-  event: APIGatewayProxyEventV2,
+export const fn = async (
+  ...args: unknown[]
 ): Promise<APIGatewayProxyResultV2> => {
+  const event = args[0] as APIGatewayProxyEventV2;
+  log('received event', event);
   const path = event.rawPath;
   if (event.requestContext.http.method === 'GET' && path === '/orders') {
     const res = await doc.send(
@@ -28,14 +33,24 @@ export const handler = async (
   }
 
   if (event.requestContext.http.method === 'POST' && path === '/orders') {
-    const body = JSON.parse(event.body ?? '{}');
+    const parsed = CreateOrderSchema.safeParse(JSON.parse(event.body ?? '{}'));
+
+    if (!parsed.success) {
+      return json(400, {
+        message: 'Invalid request body',
+        errors: parsed.error.errors,
+      });
+    }
+    const { customerName, amount } = parsed.data;
+
     const order: Order = {
       id: uuid(),
-      customerName: String(body.customerName ?? 'Anonymous'),
-      amount: Number(body.amount ?? 0),
+      customerName: String(customerName ?? 'Anonymous'),
+      amount: Number(amount ?? 0),
       createdAt: new Date().toISOString(),
       status: 'CREATED',
     };
+
     await doc.send(new PutCommand({ TableName: TABLE, Item: order }));
     await eb.send(
       new PutEventsCommand({
@@ -54,6 +69,8 @@ export const handler = async (
 
   return json(404, { message: 'Not found' });
 };
+
+export const handler = withColdStart(fn);
 
 const json = (statusCode: number, data: unknown): APIGatewayProxyResultV2 => ({
   statusCode,

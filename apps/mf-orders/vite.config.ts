@@ -6,15 +6,15 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: "web-shell",
-      remotes: {
-        "mf-orders": "http://localhost:5001/assets/remoteEntry.js",
-        "mf-analytics": "http://localhost:5002/assets/remoteEntry.js"
+      name: "mf-orders",
+      filename: "remoteEntry.js",
+      exposes: {
+        "./App": "./src/App.tsx"
       },
-      shared: ["react", "react-dom", "react-router-dom"]
+      shared: ["react", "react-dom"]
     })
   ],
-  server: { port: 5000 },
+  server: { port: 5001 },
   build: {
     outDir: "dist",
     target: "esnext"

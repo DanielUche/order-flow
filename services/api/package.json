@@ -10,15 +10,20 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.621.0",
-    "@aws-sdk/lib-dynamodb": "^3.621.0",
     "@aws-sdk/client-eventbridge": "^3.621.0",
-    "uuid": "^9.0.1"
+    "@aws-sdk/lib-dynamodb": "^3.621.0",
+    "@orderflow/contracts": "workspace:*",
+    "uuid": "^9.0.1",
+    "zod": "^3.25.76"
+  },
+  "jest": {
+    "preset": "../../jest.preset.cjs"
   },
   "devDependencies": {
     "@types/uuid": "^9.0.7",
-    "ts-jest": "^29.1.2",
+    "aws-sdk-client-mock": "^3.0.2",
     "jest": "^29.7.0",
-    "typescript": "^5.4.5",
-    "aws-sdk-client-mock": "^3.0.2"
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.5"
   }
 }
