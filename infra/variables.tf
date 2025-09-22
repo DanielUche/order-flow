@@ -20,3 +20,5 @@ variable "account_alias" {
   type    = string
   default = "daniel"
 }
+
+output "web_domain" { value = module.website.domain_name }

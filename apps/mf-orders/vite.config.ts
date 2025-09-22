@@ -1,22 +1,30 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import federation from "@originjs/vite-plugin-federation";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import federation from '@originjs/vite-plugin-federation';
+
+console.log('Federation plugin loaded:', federation);
 
 export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: "mf-orders",
-      filename: "remoteEntry.js",
+      name: 'mf-orders',
+      filename: 'remoteEntry.js',
       exposes: {
-        "./App": "./src/App.tsx"
+        './App': './src/App.tsx',
       },
-      shared: ["react", "react-dom"]
-    })
+      shared: ['react', 'react-dom'],
+    }),
   ],
-  server: { port: 5001 },
+  server: {
+    host: '127.0.0.1',
+    port: 5001,
+    strictPort: true,
+    cors: true,
+    headers: { 'Access-Control-Allow-Origin': '*' },
+  },
   build: {
-    outDir: "dist",
-    target: "esnext"
-  }
+    outDir: 'dist',
+    target: 'esnext',
+  },
 });

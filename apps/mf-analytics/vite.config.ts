@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import federation from '@originjs/vite-plugin-federation';
 
+console.log('Federation plugin loaded:', federation);
+
 export default defineConfig({
   plugins: [
     react(),
@@ -17,7 +19,7 @@ export default defineConfig({
   server: {
     host: '127.0.0.1',
     port: 5002,
-    strictPort: true, // <-- fail if 5001 is taken (don’t auto-bump)
+    strictPort: true,
     cors: true,
     headers: { 'Access-Control-Allow-Origin': '*' },
   },

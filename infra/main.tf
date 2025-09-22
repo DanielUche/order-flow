@@ -39,6 +39,7 @@ module "lambdas" {
   }
   sqs_arn       = module.queues.queue_arn
   sns_arn       = module.topics.topic_arn
+  
 }
 module "api" {
   source = "./modules/api"
@@ -79,6 +80,18 @@ module "glue_athena" {
   prefix        = "events/"
   s3_path       = "s3://app-orderflow-lake-dev/glue-athena/"
   glue_role_arn = "arn:aws:iam::123456789012:role/glue-athena-role"
+}
+
+module "observability" {
+  source = "./modules/observability"
+  alarm_topic_arn = module.topics.topic_arn
+  function_names = [
+    "orderflow-api",
+    "orderflow-processor",
+    "orderflow-notifier-email",
+    "orderflow-athena-report"
+  ]
+  dlq_arns = [ module.queues.dlq_arn ]
 }
 
 

@@ -106,6 +106,24 @@ jobs:
           WEB_URL: $(jq -r '.web_domain.value' infra/tf-outputs.json)
         run: npx playwright test e2e/smoke.spec.ts --reporter=line
 
+      - name: Deploy Frontend to S3
+        run: |
+          pnpm --filter web-shell build
+          pnpm --filter mf-orders build
+          pnpm --filter mf-analytics build
+          aws s3 sync apps/web-shell/dist s3://${{ secrets.WEB_BUCKET }}/shell --delete
+          aws s3 sync apps/mf-orders/dist s3://${{ secrets.WEB_BUCKET }}/orders --delete
+          aws s3 sync apps/mf-analytics/dist s3://${{ secrets.WEB_BUCKET }}/analytics --delete
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DIST_ID }} --paths "/*"
+      - name: Run smoke E2E
+        env:
+          WEB_URL: $(jq -r '.web_domain.value' infra/tf-outputs.json)
+        run: npx playwright test e2e/smoke.spec.ts --reporter=line
+      - name: Echo important outputs
+        working-directory: infra
+        run: |
+          echo "API URL: $(terraform output -raw api_url)"
+          echo "Web Domain: $(terraform output -raw web_domain 2>/dev/null || echo 'n/a')"
       - name: Show Outputs
         working-directory: infra
         run: terraform output -json

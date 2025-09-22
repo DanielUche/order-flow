@@ -10,8 +10,8 @@ import type {
   APIGatewayProxyEventV2,
   APIGatewayProxyResultV2,
 } from 'aws-lambda';
+import { slog, getCorrelation, withColdStart, log } from '@orderflow/aws-utils';
 import { Order } from '@orderflow/types';
-import { withColdStart, log } from '@orderflow/aws-utils';
 
 import { CreateOrderSchema } from './schemas';
 
@@ -23,7 +23,12 @@ export const fn = async (
   ...args: unknown[]
 ): Promise<APIGatewayProxyResultV2> => {
   const event = args[0] as APIGatewayProxyEventV2;
-  log('received event', event);
+  const c = getCorrelation(event);
+  slog(
+    { c, route: event.rawPath, method: event.requestContext.http.method },
+    'incoming',
+  );
+
   const path = event.rawPath;
   if (event.requestContext.http.method === 'GET' && path === '/orders') {
     const res = await doc.send(
